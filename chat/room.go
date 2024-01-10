@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Josue140596/whatsappgo-b/trace"
 	"github.com/gorilla/websocket"
 )
 
@@ -17,6 +18,9 @@ type room struct {
 	leave chan *client
 	//clients holds all current clients in this room.
 	clients map[*client]bool
+	// tracer will receive trace information of activity
+	// in the room.
+	tracer trace.Tracer
 }
 
 func (r *room) run() {

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -16,17 +18,19 @@ type templateHandler struct {
 }
 
 // * Templates allow us to blend generic text with specific text
-func (t *templateHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// With one Do only will be called once
 	// Compiling a template is process by which the source template is INTERPRETED and PREPARED
 	// for blending with various data.
 	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
+		t.templ = template.Must(template.ParseFiles(filepath.Join("..", "templates", t.filename)))
 	})
-	t.templ.Execute(w, nil)
+	t.templ.Execute(w, r)
 }
 
 func main() {
+	var addr = flag.String("addr", ":8080", "The addr of the application.")
+	flag.Parse() // parse the flags
 	// New room
 	r := newRoom()
 	//Handlers
@@ -35,5 +39,8 @@ func main() {
 	//get the room going
 	go r.run()
 	// Starting server
-	http.ListenAndServe(":8080", nil)
+	log.Println("Starting web server on", *addr)
+	if err := http.ListenAndServe(*addr, nil); err != nil {
+		log.Fatal("ListenAndServe:", err)
+	}
 }
